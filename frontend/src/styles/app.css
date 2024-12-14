@@ -1,0 +1,28 @@
+label.MuiFormControlLabel-root {
+	margin-left: 0;
+}
+
+.form-subtitle-1 {
+	margin-top: 20px !important;
+	margin-bottom: 10px !important;
+	border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+	font-size: 1.1rem !important;
+}
+
+.form-subtitle-2 {
+	margin-top: 20px !important;
+	margin-bottom: 10px !important;
+	border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+	font-size: 1rem !important;
+}
+
+.Collapsible__trigger {
+	cursor: pointer;
+	background-color: rgba(0, 0, 0, 0.12);
+	width: 100%;
+	border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+	display: flex;
+	margin-bottom: 5px;
+	padding: 10px;
+	font-size: 0.95rem;
+}

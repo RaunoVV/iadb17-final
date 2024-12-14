@@ -1,0 +1,29 @@
+{
+    "private": true,
+    "scripts": {
+        "fix": "pnpm -w biome:fix ; pnpm -r lint:fix ; pnpm -w biome:fix ; pnpm -w format",
+        "biome": "biome lint frontend/src",
+        "biome:lint": "pnpm biome --diagnostic-level=error --max-diagnostics=100",
+        "biome:fix": "pnpm biome --apply-unsafe",
+        "test-ci": "vitest run",
+        "test-related": "vitest related --run",
+        "build-docker": "pnpm -r generate && pnpm -F frontend build && pnpm -F frontend build:compress && pnpm -F backend build",
+        "build-cf-pages": "pnpm -r generate && pnpm --aggregate-output -F frontend '/^(build:staging|build-storybook:cf)$/' && pnpm -F api-spec redoc:build && pnpm -F cf-pages build",
+        "format": "prettier -w .",
+        "test-precommit": "lefthook run pre-commit --all-files",
+        "upgrade-versions": "pnpm upgrade --interactive --latest --recursive"
+    },
+    "devDependencies": {
+        "@biomejs/biome": "^1.8.3",
+        "prettier": "^3.3.3",
+        "prettier-plugin-organize-imports": "^4.0.0",
+        "typescript": "^5.5.4",
+        "vitest": "^2.0.5"
+    },
+    "optionalDependencies": {
+        "lefthook": "^1.7.15",
+        "react": "^18.3.1",
+        "react-dom": "^18.3.1"
+    },
+    "packageManager": "pnpm@9.14.2+sha512.6e2baf77d06b9362294152c851c4f278ede37ab1eba3a55fda317a4a17b209f4dbb973fb250a77abc463a341fcb1f17f17cfa24091c4eb319cda0d9b84278387"
+}

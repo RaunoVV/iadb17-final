@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+        "isolatedModules": true,
+        "resolveJsonModule": true,
+
+        // Generate `import type` statements for compatibility with Vite/esbuild.
+        // (which can not deal with types and values with the same name coming from different modules)
+        "verbatimModuleSyntax": true,
+        "forceConsistentCasingInFileNames": true,
+
+        /* Linting */
+        "strict": true,
+
+        "skipLibCheck": true
+
+        // Disabled, incompatible with too many libraries
+        // "exactOptionalPropertyTypes": true,
+    }
+}

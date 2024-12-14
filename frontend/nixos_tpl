@@ -1,0 +1,47 @@
+apiVersion: tinkerbell.org/v1alpha1
+kind: Template
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"tinkerbell.org/v1alpha1","kind":"Template","metadata":{"annotations":{},"name":"nixos","namespace":"default"},"spec":{"data":"version: \"0.1\"\nname: debian_Focal\nglobal_timeout: 1800\ntasks:\n  - name: \"os-installation\"\n    worker: \"{{.device_1}}\"\n    environment:\n        MIRROR_HOST: 192.168.123.1\n    volumes:\n      - /dev:/dev\n      - /dev/console:/dev/console\n      - /lib/firmware:/lib/firmware:ro\n      - /sys/firmware:/sys/firmware\n    actions:\n      - name: \"nixos\"\n        image: warrenio/nixos-installer:latest\n        timeout: 900\n        command: []\n      - name: \"disable-hw-pxe\"\n        image: warrenio/tinkerbell-disable-hw-pxe\n        timeout: 90\n        command: []\n        environment:\n            IMAGE: warrenio/tinkerbell-disable-hw-pxe\n            HW_NAME: \"{{.hv_name}}\"\n      - name: \"reboot\"\n        image: ghcr.io/jacobweinstock/waitdaemon:0.2.0\n        timeout: 90\n        pid: host\n        command: [\"reboot\"]\n        environment:\n            IMAGE: alpine\n            WAIT_SECONDS: 10\n        volumes:\n          - /var/run/docker.sock:/var/run/docker.sock\n"}}
+  generation: 17
+  name: nixos2
+  namespace: default
+  resourceVersion: "7940772"
+spec:
+  data: |
+    version: "0.1"
+    name: debian_Focal
+    global_timeout: 1800
+    tasks:
+      - name: "os-installation"
+        worker: "{{.device_1}}"
+        environment:
+            MIRROR_HOST: 192.168.123.1
+        volumes:
+          - /dev:/dev
+          - /dev/console:/dev/console
+          - /lib/firmware:/lib/firmware:ro
+          - /sys/firmware:/sys/firmware
+        actions:
+          - name: "nixos"
+            image: warrenio/nixos-installer:latest
+            timeout: 900
+            command: []
+          - name: "disable-hw-pxe"
+            image: warrenio/tinkerbell-disable-hw-pxe
+            timeout: 90
+            command: []
+            environment:
+                IMAGE: warrenio/tinkerbell-disable-hw-pxe
+                HW_NAME: "{{.hv_name}}"
+          - name: "reboot"
+            image: ghcr.io/jacobweinstock/waitdaemon:0.2.0
+            timeout: 90
+            pid: host
+            command: ["reboot"]
+            environment:
+                IMAGE: alpine
+                WAIT_SECONDS: 10
+            volumes:
+              - /var/run/docker.sock:/var/run/docker.sock
