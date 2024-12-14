@@ -1,0 +1,80 @@
+# yaml-language-server: $schema=https://json.schemastore.org/lefthook.json
+#
+#   Refer for explanation to following link:
+#   https://github.com/evilmartians/lefthook/blob/master/docs/configuration.md
+#
+
+skip_output:
+  - meta
+  - success
+  - skips
+
+pre-commit:
+  parallel: true
+
+  commands:
+    eslint:
+      tags: style
+      root: frontend/
+      glob: "frontend/src/**/*.{ts,tsx}"
+      run: pnpm exec eslint --no-color {staged_files}
+      skip:
+        - merge
+        - rebase
+    prettier:
+      tags: style
+      env:
+        PRETTIER_ORGANIZE_IMPORTS: "true"
+      run: pnpm exec prettier --ignore-unknown --check {staged_files} || { echo "✨ Auto-fix, re-formatting files..." ; pnpm exec prettier --ignore-unknown --write {staged_files} ; false ; }
+      fail_text: "🛑 Automatically formatted your files, please add them to your commit and try again 💡"
+      skip:
+        - merge
+        - rebase
+    typecheck:
+      tags: type
+      root: frontend/
+      glob: "frontend/src/**/*.{ts,tsx}"
+      # XXX: can not use a `package.json` script, because those do not work with filenames containing $
+      # NB: Any files containing global `declare` TypeScript directives must be listed here explicitly, as the compiler does not automatically include them
+      run: node tsc-files.js src/utils/ts-reset.d.ts src/vite-env.d.ts src/router.ts src/router.state.ts src/routeTree.gen.ts {staged_files}
+      skip:
+        - merge
+        - rebase
+    stylelint:
+      tags: style
+      root: frontend/
+      glob: "frontend/src/**/*.css"
+      run: pnpm exec stylelint {staged_files}
+      fail_text: "💡 Please run 'pnpm stylelint:fix' to try to auto-fix your code"
+      skip:
+        - merge
+        - rebase
+
+pre-push:
+  follow: true
+
+  commands:
+    test:
+      tags: test
+      glob: "**/*.{ts,tsx}"
+      # "| cat" to disable terminal-style output
+      run: pnpm -w test-related --reporter=verbose {push_files} | cat
+
+###
+### Docs: https://git-scm.com/docs/githooks
+###
+
+post-checkout:
+  # Stream live to STDOUT (incompatible with parallel)
+  follow: true
+
+  scripts:
+    "checkout-refresh.sh":
+      runner: bash
+
+post-merge:
+  follow: true
+
+  scripts:
+    "merge-refresh.sh":
+      runner: bash

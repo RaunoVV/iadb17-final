@@ -1,0 +1,6 @@
+{
+    "extends": "../tsconfig.base.web.json",
+    "compilerOptions": {
+        "noEmit": true,
+    },
+}

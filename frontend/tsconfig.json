@@ -1,0 +1,12 @@
+{
+    "extends": "../tsconfig.base.web.json",
+    "compilerOptions": {
+        "noEmit": true,
+        "jsx": "react-jsx",
+        "rootDirs": ["src", "css-types"]
+    },
+    "include": ["src/"],
+
+    // WORKAROUND: Having .mdx files in the include list causes the TypeScript server to crash on "Move to file" refactoring
+    "exclude": ["**/*.mdx"]
+}
