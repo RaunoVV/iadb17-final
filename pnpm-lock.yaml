@@ -184,6 +184,9 @@ importers:
       react-router-dom:
         specifier: ^6.26.2
         version: 6.26.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react-script:
+        specifier: ^2.0.5
+        version: 2.0.5
       shared:
         specifier: link:../shared
         version: link:../shared
@@ -3994,6 +3997,9 @@ packages:
     engines: {node: '>=14.0.0'}
     peerDependencies:
       react: '>=16.8'
+
+  react-script@2.0.5:
+    resolution: {integrity: sha512-hLFLMFAH3Rr0VJisBz/bPyaJxMEimQGvuVOBXyn3t/nmlbV6mF+nghCPoY1V4dzIi+M1A8iyyXId1cgg8eS6XA==}
 
   react-transition-group@4.4.5:
     resolution: {integrity: sha512-pZcd1MCJoiKiBR2NRxeCRg13uCXbydPnmB4EOeRrY7480qNWO8IIgQG6zlDkm6uRMsURXPuKq0GWtiM59a5Q6g==}
@@ -9270,6 +9276,8 @@ snapshots:
     dependencies:
       '@remix-run/router': 1.19.2
       react: 18.3.1
+
+  react-script@2.0.5: {}
 
   react-transition-group@4.4.5(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
