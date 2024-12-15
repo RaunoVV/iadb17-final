@@ -1,5 +1,5 @@
 import { useNavigation } from "@refinedev/core";
-import { useTable } from "@refinedev/core";
+
 import { useDataGrid } from "@refinedev/mui";
 import { DataGrid, type GridColDef } from "@mui/x-data-grid";
 
@@ -15,14 +15,6 @@ export const ListHardware = () => {
         syncWithLocation: true,
     });
     const { edit } = useNavigation();
-    const {
-        tableQuery: { isLoading },
-    } = useTable({
-        resource: "hardware",
-        pagination: { current: 1, pageSize: 10 },
-        sorters: { initial: [{ field: "name", order: "asc" }] },
-    });
-
     const columns = React.useMemo<GridColDef<THardware>[]>(
         () => [
             {
@@ -40,8 +32,7 @@ export const ListHardware = () => {
             {
                 field: "mac",
                 headerName: "MAC",
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
+
                 valueGetter: (value) => {
                     return value.row.spec?.interfaces[0].dhcp.mac;
                 },
@@ -57,12 +48,12 @@ export const ListHardware = () => {
                 },
             },
         ],
-        [isLoading],
+        [],
     );
 
     return (
         <div>
-            <h1>Products</h1>
+            <h1>Hardware</h1>
             <ListToolbar />
             <DataGrid
                 {...dataGridProps}

@@ -1,5 +1,11 @@
 import { Router } from "express";
-import { HttpError, type KubernetesObject, PatchUtils, type V1ObjectMeta } from "@kubernetes/client-node";
+import {
+    HttpError,
+    KubernetesListObject,
+    type KubernetesObject,
+    PatchUtils,
+    type V1ObjectMeta,
+} from "@kubernetes/client-node";
 
 import { customObjectsApi } from "../resources/k8s";
 import { responseMessage } from "../index.ts";
@@ -36,7 +42,7 @@ workflowRouter.get("/workflow", async (req, res) => {
 
         const workflowList = new Array<TWorkflow>();
 
-        for (const item of (k8sWorkflowList.body as any).items as k8sWorkflowObject[]) {
+        for (const item of (k8sWorkflowList.body as KubernetesListObject<k8sWorkflowObject>).items) {
             workflowList.push(WorkflowFromK8sObject(item));
         }
         res.header("Content-Range", workflowList.length.toString());

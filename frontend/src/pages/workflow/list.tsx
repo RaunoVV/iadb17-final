@@ -1,8 +1,8 @@
 import { useNavigation } from "@refinedev/core";
-import { useTable } from "@refinedev/core";
+
 import { useDataGrid } from "@refinedev/mui";
 import { DataGrid, type GridColDef } from "@mui/x-data-grid";
-import { Box } from "@mui/material";
+
 import React from "react";
 
 import { GridActions } from "../../components/GridActions";
@@ -15,14 +15,6 @@ export const ListWorkflow = () => {
         syncWithLocation: true,
     });
     const { edit } = useNavigation();
-    const {
-        tableQuery: { isLoading },
-    } = useTable({
-        resource: "Workflow",
-        pagination: { current: 1, pageSize: 10 },
-        sorters: { initial: [{ field: "name", order: "asc" }] },
-    });
-
     const columns = React.useMemo<GridColDef<TWorkflow>[]>(
         () => [
             {
@@ -64,7 +56,7 @@ export const ListWorkflow = () => {
                 },
             },
         ],
-        [isLoading],
+        [],
     );
 
     return (

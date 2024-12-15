@@ -1,5 +1,5 @@
 import { useNavigation } from "@refinedev/core";
-import { useTable } from "@refinedev/core";
+
 import { useDataGrid } from "@refinedev/mui";
 import { DataGrid, type GridColDef } from "@mui/x-data-grid";
 
@@ -15,14 +15,6 @@ export const ListTemplate = () => {
         syncWithLocation: true,
     });
     const { edit } = useNavigation();
-    const {
-        tableQuery: { isLoading },
-    } = useTable({
-        resource: "Template",
-        pagination: { current: 1, pageSize: 10 },
-        sorters: { initial: [{ field: "name", order: "asc" }] },
-    });
-
     const columns = React.useMemo<GridColDef<TTemplate>[]>(
         () => [
             {
@@ -37,7 +29,7 @@ export const ListTemplate = () => {
                 type: "number",
                 minWidth: 200,
                 valueGetter: (params) => {
-                    return 999;
+                    return params.row.spec.data?.tasks.length ?? 0;
                 },
             },
             {
@@ -55,7 +47,7 @@ export const ListTemplate = () => {
                 },
             },
         ],
-        [isLoading],
+        [],
     );
 
     return (

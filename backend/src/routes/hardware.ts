@@ -1,5 +1,11 @@
 import { Router } from "express";
-import { PatchUtils, HttpError, type V1ObjectMeta, type KubernetesObject } from "@kubernetes/client-node";
+import {
+    HttpError,
+    KubernetesListObject,
+    type KubernetesObject,
+    PatchUtils,
+    type V1ObjectMeta,
+} from "@kubernetes/client-node";
 
 import { customObjectsApi } from "../resources/k8s.ts";
 import { responseMessage } from "../index.ts";
@@ -44,7 +50,8 @@ hardwareRouter.get("/hardware", async (req, res) => {
             namespace,
             plural,
         );
-        const items = (k8sHardwareListResp.body as any).items as any[];
+        const items = (k8sHardwareListResp.body as KubernetesListObject<k8sHardwareObject>)
+            .items as k8sHardwareObject[];
 
         console.log("test");
         const hardwareList = new Array<THardware>();
@@ -83,7 +90,6 @@ hardwareRouter.get("/hardware/:hardwareName", async (req, res) => {
     }
 });
 hardwareRouter.put("/hardware/:hardwareName", async (req, res) => {
-    const hwSimplifiedList = [];
     console.debug("input: ", req.body);
     const hwData = hardwareSpecFixup(req.body);
     console.debug("parsed: ", hwData);
@@ -180,7 +186,6 @@ hardwareRouter.post("/hardware", async (req, res) => {
     }
 });
 hardwareRouter.delete("/hardware/:hardwareName", async (req, res) => {
-    const hwSimplifiedList = [];
     try {
         // Define custom resource parameters
         console.log("Deleteing hw obj");

@@ -1,99 +1,118 @@
-import type { DataProvider } from "@refinedev/core";
+import type {
+    BaseRecord,
+    CreateParams,
+    DataProvider,
+    DeleteOneParams,
+    GetListParams,
+    GetManyParams,
+    GetOneParams,
+    UpdateParams,
+    UpdateResponse,
+} from "@refinedev/core";
 
 const API_URL = "http://localhost:8060";
 
+function validateResponseStatus(response: Response) {
+    if (response.status < 200 || response.status > 299) {
+        throw new Error(response.statusText);
+    }
+}
+
 export const dataProvider: DataProvider = {
-	getOne: async ({ resource, id, meta }) => {
-		const response = await fetch(`${API_URL}/${resource}/${id}`);
+    getOne: async <TData extends BaseRecord = BaseRecord>({resource, id}: GetOneParams) => {
+        const response = await fetch(`${API_URL}/${resource}/${id}`);
 
-		if (response.status < 200 || response.status > 299)
-			throw new Error(response.statusText);
+        validateResponseStatus(response);
 
-		const data = await response.json();
+        // Use ResourceMapping to determine the correct return type based on the resource
+        const data = (await response.json()) as TData;
 
-		return { data };
-	},
-	update: async ({ resource, id, variables }) => {
-		const response = await fetch(`${API_URL}/${resource}/${id}`, {
-			method: "PUT",
-			body: JSON.stringify(variables),
-			headers: {
-				"Content-Type": "application/json",
-			},
-		});
+        return {data};
+    },
+    update: async <TData extends BaseRecord = BaseRecord, TVariables = { [key: string]: unknown }>({
+                                                                                                       resource,
+                                                                                                       id,
+                                                                                                       variables,
+                                                                                                   }: UpdateParams<TVariables>): Promise<UpdateResponse<TData>> => {
+        console.log("variables", variables);
+        const response = await fetch(`${API_URL}/${resource}/${id}`, {
+            method: "PUT",
+            body: JSON.stringify(variables),
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
 
-		if (response.status < 200 || response.status > 299) throw response;
+        validateResponseStatus(response);
 
-		const data = await response.json();
+        const data = (await response.json()) as TData;
 
-		return { data };
-	},
-	getList: async ({ resource, pagination, filters, sorters, meta }) => {
-		const response = await fetch(`${API_URL}/${resource}`);
+        return {data};
+    },
+    getList: async <TData extends BaseRecord = BaseRecord>({resource}: GetListParams) => {
+        const response = await fetch(`${API_URL}/${resource}`);
 
-		if (response.status < 200 || response.status > 299) throw response;
+        validateResponseStatus(response);
 
-		const data = await response.json();
+        const data = (await response.json()) as TData[];
+        const total = Number(response.headers.get("Content-Range"));
 
-		return {
-			data,
-			total: 0, // We'll cover this in the next steps.
-		};
-	},
-	create: async ({ resource, variables }) => {
-		console.log("posting values", JSON.stringify(variables));
-		const response = await fetch(`${API_URL}/${resource}`, {
-			method: "POST",
-			body: JSON.stringify(variables),
-			headers: {
-				"Content-Type": "application/json",
-			},
-		});
+        return {
+            data,
+            total: total, // We'll cover this in the next steps.
+        };
+    },
+    create: async <TData extends BaseRecord = BaseRecord, TVariables = { [key: string]: unknown }>({
+                                                                                                       resource,
+                                                                                                       variables,
+                                                                                                   }: CreateParams<TVariables>) => {
+        console.log("posting values", JSON.stringify(variables));
+        const response = await fetch(`${API_URL}/${resource}`, {
+            method: "POST",
+            body: JSON.stringify(variables),
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
 
-		if (response.status < 200 || response.status > 299) throw response;
+        validateResponseStatus(response);
 
-		const data = await response.json();
+        const data = (await response.json()) as TData;
 
-		return { data };
-	},
-	deleteOne: async ({ resource, id }) => {
-		const response = await fetch(`${API_URL}/${resource}/${id}`, {
-			method: "DELETE",
-			headers: {
-				"Content-Type": "application/json",
-			},
-		});
+        return {data};
+    },
+    deleteOne: async <TData extends BaseRecord = BaseRecord, TVariables = { [key: string]: unknown }>({
+                                                                                                          resource,
+                                                                                                          id,
+                                                                                                      }: DeleteOneParams<TVariables>) => {
+        const response = await fetch(`${API_URL}/${resource}/${id}`, {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
 
-		if (response.status < 200 || response.status > 299)
-			throw new Error(response.statusText);
+        validateResponseStatus(response);
 
-		const data = await response.json();
-		return { data };
-	},
-	getMany: async ({ resource, ids, meta }) => {
-		const params = new URLSearchParams();
+        const data = (await response.json()) as TData;
+        return {data};
+    },
+    getMany: async <TData extends BaseRecord = BaseRecord>({resource, ids}: GetManyParams) => {
+        const params = new URLSearchParams();
 
-		if (ids) {
-			for (const id of ids) {
-				// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-				// @ts-ignore
-				params.append("id", id);
-			}
-		}
+        if (ids) {
+            for (const id of ids) {
+                params.append("id", id.toString());
+            }
+        }
 
-		const response = await fetch(`${API_URL}/${resource}?${params.toString()}`);
+        const response = await fetch(`${API_URL}/${resource}?${params.toString()}`);
 
-		if (response.status < 200 || response.status > 299) throw response;
+        validateResponseStatus(response);
 
-		const data = await response.json();
+        const data = (await response.json()) as TData[];
 
-		return { data };
-	},
-	getApiUrl: () => API_URL,
-	// Optional methods:
-	// getMany: () => { /* ... */ },
-	// createMany: () => { /* ... */ },
-	// deleteMany: () => { /* ... */ },
-	// updateMany: () => { /* ... */ },
-	// custom: () => { /* ... */ },
+        return {data};
+    },
+    getApiUrl: () => API_URL,
 };

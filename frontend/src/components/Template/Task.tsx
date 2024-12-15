@@ -1,8 +1,8 @@
 import React, { type ReactElement } from "react";
 import { useFieldArray, useFormContext } from "react-hook-form";
-import { Box, Button, Divider, FormControl, Paper, Stack, TextField, Typography } from "@mui/material";
+import {Box, Button, Stack, TextField, Typography} from "@mui/material";
 import { DeleteButton } from "@refinedev/mui";
-import { string } from "zod";
+
 import type { TTemplate, TTemplateEnvvar } from "shared/types/Template";
 import { TemplateAction } from "./Action.tsx";
 

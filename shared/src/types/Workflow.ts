@@ -65,3 +65,7 @@ export const workflowFormValuesSchema = z.object({
 export type TWorkflow = z.infer<typeof workflowSchema>;
 export type TWorkflowSpec = z.infer<typeof workflowSpecSchema>;
 export type TWorkflowFormValues = z.infer<typeof workflowFormValuesSchema>;
+
+export const isWorkflow = (value: unknown): value is TWorkflow => {
+    return workflowSchema.safeParse(value).success;
+};

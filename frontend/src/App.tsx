@@ -2,23 +2,16 @@ import { Refine } from "@refinedev/core";
 
 import { RefineKbar, RefineKbarProvider } from "@refinedev/kbar";
 
-import {
-    AuthPage,
-    ErrorComponent,
-    notificationProvider,
-    RefineSnackbarProvider,
-    RefineThemes,
-    ThemedLayoutV2,
-} from "@refinedev/mui";
+import {ErrorComponent, RefineSnackbarProvider, ThemedLayoutV2, useNotificationProvider} from "@refinedev/mui";
 
 import { dataProvider } from "./providers/data-provider";
 import CssBaseline from "@mui/material/CssBaseline";
 import GlobalStyles from "@mui/material/GlobalStyles";
-import { BrowserRouter, Route, Routes, Outlet } from "react-router-dom";
+import {BrowserRouter, Outlet, Route, Routes} from "react-router-dom";
 import routerBindings, {
+    DocumentTitleHandler,
     NavigateToResource,
     UnsavedChangesNotifier,
-    DocumentTitleHandler,
 } from "@refinedev/react-router-v6";
 import { ColorModeContextProvider } from "./contexts/color-mode";
 import { Header } from "./components/header";
@@ -45,7 +38,7 @@ function App() {
                     <RefineSnackbarProvider>
                         <Refine
                             dataProvider={dataProvider}
-                            notificationProvider={notificationProvider}
+                            notificationProvider={useNotificationProvider}
                             routerProvider={routerBindings}
                             resources={[
                                 {
@@ -74,9 +67,14 @@ function App() {
                                 },
                             ]}
                             options={{
+                                title: {
+                                    text: "Tinkerbell UI",
+                                    icon: "",
+                                },
                                 syncWithLocation: true,
                                 warnWhenUnsavedChanges: true,
                                 useNewQueryKeys: true,
+                                disableTelemetry: true,
                                 projectId: "Wh2n0y-AaASBj-8VAXUj",
                             }}
                         >
@@ -97,7 +95,7 @@ function App() {
                                     </Route>
                                     <Route path="/workflow">
                                         <Route index element={<ListWorkflow />} />
-                                        {<Route path=":id" element={<EditWorkflow />} />}
+                                        <Route path=":id" element={<EditWorkflow/>}/>
                                         <Route path=":id/edit" element={<EditWorkflow />} />
                                         <Route path="create" element={<CreateWorkflow />} />
                                     </Route>

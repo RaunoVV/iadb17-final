@@ -4,12 +4,11 @@ import cors from "cors";
 
 import { hardwareRouter } from "./routes/hardware";
 import { templateRouter } from "./routes/template";
-import { workflowSchema } from "shared/src/types/Workflow.ts";
 import { workflowRouter } from "./routes/workflow.ts";
 
 const index = express();
 
-export const responseMessage = (code: any, message: any) => {
+export const responseMessage = (code: number | undefined, message: string) => {
     return { status: code, message: message };
 };
 

@@ -56,6 +56,7 @@ export const handlers = [
         // ...and respond to them using this JSON response.
         return HttpResponse.json(hardwareMockData.get(id.toString()));
     }),
+
     http.get("http://localhost:8060/workflow", () => {
         // ...and respond to them using this JSON response.
         return HttpResponse.json(Array.from(workflowMockData.values()));
@@ -101,6 +102,7 @@ export const handlers = [
             }
         },
     ),
+
     http.get("http://localhost:8060/template", () => {
         // ...and respond to them using this JSON response.
         return HttpResponse.json(Array.from(templateMockData.values()));
@@ -122,4 +124,30 @@ export const handlers = [
         // ...and respond to them using this JSON response.
         return HttpResponse.json(templateMockData.get(id.toString()));
     }),
+
+    http.post<never, TTemplate & { id: string }, TTemplate>("http://localhost:8060/template", async ({request}) => {
+        const newTpl = await request.json();
+        newTpl.id = newTpl.name;
+        newTpl.creationTimestamp = new Date();
+        templateMockData.set(newTpl.name, newTpl);
+        return HttpResponse.json(newTpl);
+    }),
+
+    http.put<{ id: string }, TTemplate & { id: string }, TTemplate | JsonBodyType>(
+        "http://localhost:8060/template/:id",
+        async ({params, request}) => {
+            const {id} = params;
+            const postedData = await request.json();
+            console.log(postedData);
+            // const tpl = templateMockData.get(id.toString());
+            const tpl = templateMockData.get(id.toString());
+            if (!tpl) {
+                return HttpResponse.json({error: "Template not found."}, {status: 400});
+            } else {
+                tpl.spec = postedData.spec;
+                templateMockData.set(id.toString(), tpl);
+                return HttpResponse.json(tpl);
+            }
+        },
+    ),
 ];
