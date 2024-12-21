@@ -14,7 +14,10 @@ export const handlers = [
     // Intercept "GET https://example.com/user" requests...
     http.get("http://localhost:8060/hardware", () => {
         // ...and respond to them using this JSON response.
-        return HttpResponse.json(Array.from(hardwareMockData.values()));
+        const items = Array.from(hardwareMockData.values())
+        const resp = HttpResponse.json(items)
+        resp.headers.append("Content-Range", items.length.toString());
+        return resp
     }),
     http.delete<{ id: string }>("http://localhost:8060/hardware/:id", ({ params }) => {
         const { id } = params;
@@ -58,8 +61,10 @@ export const handlers = [
     }),
 
     http.get("http://localhost:8060/workflow", () => {
-        // ...and respond to them using this JSON response.
-        return HttpResponse.json(Array.from(workflowMockData.values()));
+        const items = Array.from(workflowMockData.values())
+        const resp = HttpResponse.json(items)
+        resp.headers.append("Content-Range", items.length.toString());
+        return resp
     }),
     http.delete("http://localhost:8060/workflow/:id", ({ params }) => {
         const { id } = params;
@@ -104,8 +109,11 @@ export const handlers = [
     ),
 
     http.get("http://localhost:8060/template", () => {
-        // ...and respond to them using this JSON response.
-        return HttpResponse.json(Array.from(templateMockData.values()));
+        const items = Array.from(templateMockData.values())
+        const resp = HttpResponse.json(items)
+        resp.headers.append("Content-Range", items.length.toString());
+        return resp
+
     }),
     http.delete("http://localhost:8060/template/:id", ({ params }) => {
         const { id } = params;

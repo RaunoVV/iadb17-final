@@ -11,7 +11,8 @@ import {ListToolbar} from "../../components/ListToolbar";
 
 export const ListTemplate = () => {
     const { dataGridProps } = useDataGrid<TTemplate>({
-        sorters: { initial: [{ field: "id", order: "asc" }] },
+        sorters: {initial: [{field: "name", order: "asc"}], mode: "off"},
+        filters: {mode: "off"},
         syncWithLocation: true,
     });
     const { edit } = useNavigation();
@@ -25,7 +26,7 @@ export const ListTemplate = () => {
             },
             {
                 field: "task_count",
-                headerName: "Task count (shall we keep it?)",
+                headerName: "Task count",
                 type: "number",
                 minWidth: 200,
                 valueGetter: (_value, row) => {

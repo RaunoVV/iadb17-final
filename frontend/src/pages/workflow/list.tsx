@@ -10,11 +10,12 @@ import type {TWorkflow} from "shared/types/Workflow";
 import {ListToolbar} from "../../components/ListToolbar";
 
 export const ListWorkflow = () => {
-    const { dataGridProps } = useDataGrid<TWorkflow>({
-        sorters: { initial: [{ field: "id", order: "asc" }] },
+    const {dataGridProps} = useDataGrid<TWorkflow>({
+        sorters: {initial: [{field: "name", order: "asc"}], mode: "off"},
+        filters: {mode: "off"},
         syncWithLocation: true,
     });
-    const { edit } = useNavigation();
+    const {edit} = useNavigation();
     const columns = React.useMemo<GridColDef<TWorkflow>[]>(
         () => [
             {
@@ -51,8 +52,8 @@ export const ListWorkflow = () => {
                 field: "actions",
                 headerName: "Actions",
                 minWidth: 200,
-                renderCell: function render({ row }) {
-                    return <GridActions recordItemId={row.name} />;
+                renderCell: function render({row}) {
+                    return <GridActions recordItemId={row.name}/>;
                 },
             },
         ],
@@ -62,13 +63,12 @@ export const ListWorkflow = () => {
     return (
         <div>
             <h1>Workflows</h1>
-            <ListToolbar />
+            <ListToolbar/>
             <DataGrid
                 {...dataGridProps}
                 columns={columns}
                 autoHeight
                 onRowDoubleClick={(params) => {
-
                     edit("workflow", params.id);
                 }}
             />

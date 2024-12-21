@@ -11,7 +11,9 @@ import {ListToolbar} from "../../components/ListToolbar";
 
 export const ListHardware = () => {
     const { dataGridProps } = useDataGrid<THardware>({
-        sorters: { initial: [{ field: "id", order: "asc" }] },
+        sorters: {initial: [{field: "name", order: "asc"}], mode: "off"},
+        filters: {mode: "off"},
+        pagination: {mode: "client"},
         syncWithLocation: true,
     });
     const { edit } = useNavigation();
@@ -58,9 +60,7 @@ export const ListHardware = () => {
             <DataGrid
                 {...dataGridProps}
                 columns={columns}
-                autoHeight
                 onRowDoubleClick={(params) => {
-
                     edit("hardware", params.id);
                 }}
             />
