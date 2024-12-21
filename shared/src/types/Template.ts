@@ -1,10 +1,9 @@
-import { z } from "zod";
-import type { hardwareSchema } from "./Hardware.ts";
-import { baseSchema } from "./Base";
+import {z} from "zod";
+import {baseSchema} from "./Base";
 
 export const environmentSchema = z.object({
     var: z.string().min(2),
-    val: z.any(),
+    val: z.union([z.string(), z.number(), z.boolean()]).optional(),
 });
 const actionSchema = z.object({
     name: z.string().min(3),

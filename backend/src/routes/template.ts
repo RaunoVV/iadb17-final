@@ -59,7 +59,7 @@ const TemplateFromK8sObject = (k8sObject: k8sTemplateObject): TTemplate => {
 };
 const K8sSpecFromTemplate = (template: TTemplate): { data: string } => {
     const k8sObjectTasks = new Array<TTemplateK8sTask>();
-    const envVarObj: Record<string, string | boolean | number> = {};
+    const envVarObj: Record<string, TTemplateEnvvar["val"]> = {};
     for (const task of template.spec?.data?.tasks ?? []) {
         if (Array.isArray(task.environment)) {
             for (const envvar of task.environment) {

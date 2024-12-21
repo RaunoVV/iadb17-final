@@ -1,18 +1,18 @@
-import { Box, Button, TextField } from "@mui/material";
+import {Box, Button, TextField} from "@mui/material";
 
 import type React from "react";
 
-import { useFieldArray, useFormContext } from "react-hook-form";
+import {useFieldArray, useFormContext} from "react-hook-form";
 
-import { HardwareInterface } from "./Interface.tsx";
-import {hardwareInterfaceSchema, type THardwareInterface} from "shared/types/Hardware";
+import {HardwareInterface} from "./Interface.tsx";
+import {hardwareInterfaceSchema, type THardware, type THardwareInterface} from "shared/types/Hardware";
 
 export const HardwareForm = (props: { action: string; defaultInterfaceValue: THardwareInterface }) => {
     const {
         register,
         control,
         formState: {errors},
-    } = useFormContext();
+    } = useFormContext<THardware>();
     const {fields, append, remove} = useFieldArray({
         name: "spec.interfaces",
         control,

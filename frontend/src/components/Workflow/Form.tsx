@@ -1,18 +1,19 @@
 import {Autocomplete, Box, createFilterOptions, TextField} from "@mui/material";
 
-import { Controller, useFormContext } from "react-hook-form";
+import {Controller, useFormContext} from "react-hook-form";
 import React from "react";
 
-import { useAutocomplete } from "@refinedev/mui";
-import type { THardware } from "shared/types/Hardware";
-import type { TTemplate } from "shared/types/Template";
+import {useAutocomplete} from "@refinedev/mui";
+import type {THardware} from "shared/types/Hardware";
+import type {TTemplate} from "shared/types/Template";
+import type {TWorkflow} from "shared/types/Workflow";
 
 export const WorkflowForm = (props: { action: string }) => {
     const {
         register,
         control,
         formState: {errors},
-    } = useFormContext();
+    } = useFormContext<TWorkflow>();
     const {autocompleteProps: hardwareAutoCompleteProps} = useAutocomplete<THardware>({
         resource: "hardware",
     });
