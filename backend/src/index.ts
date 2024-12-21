@@ -2,15 +2,11 @@ import "source-map-support/register.js";
 import express from "express";
 import cors from "cors";
 
-import { hardwareRouter } from "./routes/hardware";
-import { templateRouter } from "./routes/template";
-import { workflowRouter } from "./routes/workflow.ts";
+import {hardwareRouter} from "./routes/hardware";
+import {templateRouter} from "./routes/template";
+import {workflowRouter} from "./routes/workflow";
 
 const index = express();
-
-export const responseMessage = (code: number | undefined, message: string) => {
-    return { status: code, message: message };
-};
 
 index.use(cors());
 index.use((req, res, next) => {

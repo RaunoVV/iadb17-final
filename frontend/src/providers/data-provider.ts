@@ -34,7 +34,7 @@ export const dataProvider: DataProvider = {
                                                                                                        id,
                                                                                                        variables,
                                                                                                    }: UpdateParams<TVariables>): Promise<UpdateResponse<TData>> => {
-        console.log("variables", variables);
+
         const response = await fetch(`${API_URL}/${resource}/${id}`, {
             method: "PUT",
             body: JSON.stringify(variables),
@@ -66,7 +66,7 @@ export const dataProvider: DataProvider = {
                                                                                                        resource,
                                                                                                        variables,
                                                                                                    }: CreateParams<TVariables>) => {
-        console.log("posting values", JSON.stringify(variables));
+
         const response = await fetch(`${API_URL}/${resource}`, {
             method: "POST",
             body: JSON.stringify(variables),

@@ -1,15 +1,11 @@
-import {
-    type TTemplate,
-    type TTemplateEnvvar,
-    type TTemplateK8sTask,
-    type TTemplateSpec,
-} from "shared/src/types/Template";
-import type {KubernetesListObject, KubernetesObject, V1ObjectMeta} from "@kubernetes/client-node";
-import {dumpYaml, HttpError, loadYaml, PatchUtils} from "@kubernetes/client-node";
+import type {TTemplate, TTemplateEnvvar, TTemplateK8sTask, TTemplateSpec,} from "shared/src/types/Template";
+import type {KubernetesListObject, KubernetesObject, V1ObjectMeta,} from "@kubernetes/client-node";
+import {dumpYaml, loadYaml, PatchUtils} from "@kubernetes/client-node";
 
-import { Router } from "express";
-import { customObjectsApi } from "../resources/k8s";
-import { responseMessage } from "../index.ts";
+import {Router} from "express";
+import {customObjectsApi} from "../resources/k8s";
+
+import {responseMessage} from "../utils";
 
 export const templateRouter = Router();
 
@@ -24,7 +20,6 @@ interface k8sTemplateObject extends KubernetesObject {
 }
 
 const TemplateFromK8sObject = (k8sObject: k8sTemplateObject): TTemplate => {
-    // const tasks = loadYaml<TTemplateSpecData>(k8sObject.spec?.data).tasks;
     const returnObj: TTemplate = {
         id: k8sObject.metadata.name,
         uid: k8sObject.metadata.uid,
@@ -35,14 +30,11 @@ const TemplateFromK8sObject = (k8sObject: k8sTemplateObject): TTemplate => {
 
     if ((returnObj.spec?.data?.tasks?.length ?? 0) > 0) {
         for (const task of returnObj.spec?.data?.tasks ?? []) {
-            // if (Array.isArray(task.environment) && task.environment.length > 0) {
-            // 	for (const envar of task.environment) {
-            // 		console.log(envar);
-            // 	}
-            // }
             if (task.environment && !Array.isArray(task.environment)) {
                 const envarArray = new Array<TTemplateEnvvar>();
-                for (const [key] of Object.entries<Record<string, string>>(task.environment)) {
+                for (const [key] of Object.entries<Record<string, string>>(
+                    task.environment,
+                )) {
                     envarArray.push({var: key, val: task.environment[key]});
                 }
                 task.environment = envarArray;
@@ -52,7 +44,9 @@ const TemplateFromK8sObject = (k8sObject: k8sTemplateObject): TTemplate => {
                 for (const action of task.actions) {
                     if (action.environment && !Array.isArray(action.environment)) {
                         const actionEnvvars = new Array<TTemplateEnvvar>();
-                        for (const [key] of Object.entries<Record<string, string>>(action.environment)) {
+                        for (const [key] of Object.entries<Record<string, string>>(
+                            action.environment,
+                        )) {
                             actionEnvvars.push({var: key, val: action.environment[key]});
                         }
                         action.environment = actionEnvvars;
@@ -82,72 +76,68 @@ const K8sSpecFromTemplate = (template: TTemplate): { data: string } => {
     };
 };
 templateRouter.get("/template", async (req, res) => {
-    try {
-        // Define custom resource parameters
-        console.log("Getting template");
-        // List custom resources
-        const k8sTemplateList = await customObjectsApi.listNamespacedCustomObject(group, version, namespace, plural);
-
-        const templateList = new Array<TTemplate>();
-        const items = (k8sTemplateList.body as KubernetesListObject<k8sTemplateObject>).items as k8sTemplateObject[];
-        for (const item of items) {
-            templateList.push(TemplateFromK8sObject(item));
-        }
-        res.header("Content-Range", templateList.length.toString());
-        res.header("Content-Type", "application/json");
-        res.json(templateList);
-    } catch (error) {
-        console.error("Error:", error);
-        if (error instanceof HttpError) {
-            console.error("Error:", error);
-            res.status(error.statusCode ?? 500).send(responseMessage(error.body.statusCode, error.body.message));
-        }
-    }
+    await customObjectsApi
+        .listNamespacedCustomObject(group, version, namespace, plural)
+        .then((result) => {
+            const templateList = new Array<TTemplate>();
+            const items = (result.body as KubernetesListObject<k8sTemplateObject>)
+                .items as k8sTemplateObject[];
+            for (const item of items) {
+                templateList.push(TemplateFromK8sObject(item));
+            }
+            res.header("Content-Range", templateList.length.toString());
+            res.header("Content-Type", "application/json");
+            res.json(templateList);
+        })
+        .catch((reason) => {
+            const errorMessage = ["Error:", req.path, req.method, reason];
+            console.error(...errorMessage);
+            res
+                .status(reason.statusCode)
+                .send(responseMessage(reason.statusCode, errorMessage.join(",")));
+        });
 });
 templateRouter.get("/template/:templateName", async (req, res) => {
-    try {
-        // List custom resources
-        const k8sTemplate = await customObjectsApi.getNamespacedCustomObject(
+    await customObjectsApi
+        .getNamespacedCustomObject(
             group,
             version,
             namespace,
             plural,
             req.params.templateName,
-        );
+        )
+        .then((result) => {
+            const tpl = TemplateFromK8sObject(result.body as k8sTemplateObject);
 
-        const hw = TemplateFromK8sObject(k8sTemplate.body as k8sTemplateObject);
-
-        res.header("Content-Type", "application/json");
-        res.json(hw);
-    } catch (error) {
-        if (error instanceof HttpError) {
-            console.error("Error:", error);
-            res.status(error.statusCode ?? 500).send(responseMessage(error.body.statusCode, error.body.message));
-        }
-    }
+            res.header("Content-Type", "application/json");
+            res.json(tpl);
+        })
+        .catch((reason) => {
+            const errorMessage = ["Error:", req.path, req.method, reason];
+            console.error(...errorMessage);
+            res
+                .status(reason.statusCode)
+                .send(responseMessage(reason.statusCode, errorMessage.join(",")));
+        });
 });
 templateRouter.put("/template/:templateName", async (req, res) => {
-    try {
-        // Define custom resource parameters
+    const templateSpec = K8sSpecFromTemplate(req.body);
 
-        console.log("Body:", req.body);
-        const templateSpec = K8sSpecFromTemplate(req.body);
-        console.log("Reversed template:", templateSpec);
+    const patch = [
+        {
+            op: "replace",
+            path: "/spec",
+            value: templateSpec,
+        },
+    ];
 
-        const patch = [
-            {
-                op: "replace",
-                path: "/spec",
-                value: templateSpec,
-            },
-        ];
-
-        const options = {
-            headers: {
-                "Content-type": PatchUtils.PATCH_FORMAT_JSON_PATCH,
-            },
-        };
-        await customObjectsApi.patchNamespacedCustomObject(
+    const options = {
+        headers: {
+            "Content-type": PatchUtils.PATCH_FORMAT_JSON_PATCH,
+        },
+    };
+    await customObjectsApi
+        .patchNamespacedCustomObject(
             group,
             version,
             namespace,
@@ -158,86 +148,79 @@ templateRouter.put("/template/:templateName", async (req, res) => {
             undefined,
             undefined,
             options,
-        );
-        res.status(200).send(responseMessage(200, "Template updated successfully"));
-    } catch (error) {
-        if (error instanceof HttpError) {
-            console.error("Error:", error);
-            res.status(error.statusCode ?? 500).send(responseMessage(error.body.statusCode, error.body.message));
-        }
-    }
+        )
+        .then((result) => {
+            const tpl = TemplateFromK8sObject(result.body as k8sTemplateObject);
+            res.header("Content-Type", "application/json");
+            res.json(tpl);
+        })
+        .catch((reason) => {
+            const errorMessage = ["Error:", req.path, req.method, reason];
+            console.error(...errorMessage);
+            res
+                .status(reason.statusCode)
+                .send(responseMessage(reason.statusCode, errorMessage.join(",")));
+        });
 });
-// templateRouter.post("/template", async (req, res) => {
-// 	try {
-// 		// Define custom resource parameters
-//
-// 		const hwObject = {
-// 			apiVersion: `${group}/${version}`,
-// 			kind: "Template",
-// 			metadata: {
-// 				name: req.body.name,
-// 				namespace: "default",
-// 			},
-// 			spec: req.body.spec,
-// 		};
-//
-// 		const options = {
-// 			headers: {
-// 				"Content-type": "application/json",
-// 			},
-// 		};
-// 		await customObjectsApi
-// 			.createNamespacedCustomObject(
-// 				group,
-// 				version,
-// 				namespace,
-// 				plural,
-// 				hwObject,
-// 				undefined,
-// 				undefined,
-// 				undefined,
-// 				options,
-// 			)
-// 			.then((result) => {
-// 				const hw = TemplateFromK8sObject(result.body);
-// 				console.log(hw);
-//
-// 				res.status(200).send(hw);
-// 			})
-// 			.catch((reason) => {
-// 				console.error("Error:", reason);
-// 				res
-// 					.status(reason.statusCode)
-// 					.send(responseMessage(reason.statusCode, reason.body.message));
-// 			});
-// 	} catch (error) {
-// 		if (error instanceof HttpError) {
-// 			console.error("Error:", error);
-// 			res
-// 				.status(error.statusCode ?? 500)
-// 				.send(responseMessage(error.body.statusCode, error.body.message));
-// 		}
-// 	}
-// });
-// templateRouter.delete("/template/:templateName", async (req, res) => {
-// 	const hwSimplifiedList = [];
-// 	try {
-// 		// Define custom resource parameters
-//
-// 		await customObjectsApi.deleteNamespacedCustomObject(
-// 			group,
-// 			version,
-// 			namespace,
-// 			plural,
-// 			req.params.templateName,
-// 		);
-// 		res.status(200).send({ id: req.params.templateName, previousData: {} });
-// 	} catch (error) {
-// 		if (error instanceof HttpError) {
-// 			console.error("Error:", error);
-// 			res
-// 				.status(error.statusCode ?? 500)
-// 				.send(responseMessage(error.body.statusCode, error.body.message));
-// 		}
-// 	}
-// });
+templateRouter.post("/template", async (req, res) => {
+    const tplObject = {
+        apiVersion: `${group}/${version}`,
+        kind: "Template",
+        metadata: {
+            name: req.body.name,
+            namespace: "default",
+        },
+        spec: req.body.spec,
+    };
+
+    const options = {
+        headers: {
+            "Content-type": "application/json",
+        },
+    };
+    await customObjectsApi
+        .createNamespacedCustomObject(
+            group,
+            version,
+            namespace,
+            plural,
+            tplObject,
+            undefined,
+            undefined,
+            undefined,
+            options,
+        )
+        .then((result) => {
+            const tpl = TemplateFromK8sObject(result.body as k8sTemplateObject);
+            res.status(200).send(tpl);
+        })
+        .catch((reason) => {
+            const errorMessage = ["Error:", req.path, req.method, reason];
+            console.error(...errorMessage);
+            res
+                .status(reason.statusCode)
+                .send(responseMessage(reason.statusCode, errorMessage.join(",")));
+        });
+});
+templateRouter.delete("/template/:templateName", async (req, res) => {
+    await customObjectsApi
+        .deleteNamespacedCustomObject(
+            group,
+            version,
+            namespace,
+            plural,
+            req.params.templateName,
+        )
+        .then((result) => {
+            res
+                .status(200)
+                .send(TemplateFromK8sObject(result.body as k8sTemplateObject));
+        })
+        .catch((reason) => {
+            const errorMessage = ["Error:", req.path, req.method, reason];
+            console.error(...errorMessage);
+            res
+                .status(reason.statusCode)
+                .send(responseMessage(reason.statusCode, errorMessage.join(",")));
+        });
+});

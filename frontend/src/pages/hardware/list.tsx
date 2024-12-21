@@ -1,13 +1,13 @@
-import { useNavigation } from "@refinedev/core";
+import {useNavigation} from "@refinedev/core";
 
-import { useDataGrid } from "@refinedev/mui";
-import { DataGrid, type GridColDef } from "@mui/x-data-grid";
+import {useDataGrid} from "@refinedev/mui";
+import {DataGrid, type GridColDef} from "@mui/x-data-grid";
 
 import React from "react";
 
-import type { THardware } from "shared/types/Hardware";
-import { GridActions } from "../../components/GridActions";
-import { ListToolbar } from "../../components/ListToolbar";
+import type {THardware} from "shared/types/Hardware";
+import {GridActions} from "../../components/GridActions";
+import {ListToolbar} from "../../components/ListToolbar";
 
 export const ListHardware = () => {
     const { dataGridProps } = useDataGrid<THardware>({
@@ -33,8 +33,8 @@ export const ListHardware = () => {
                 field: "mac",
                 headerName: "MAC",
 
-                valueGetter: (value) => {
-                    return value.row.spec?.interfaces[0].dhcp.mac;
+                valueGetter: (_value, row) => {
+                    return row.spec?.interfaces[0].dhcp.mac;
                 },
                 minWidth: 120,
                 flex: 0.3,
@@ -60,7 +60,7 @@ export const ListHardware = () => {
                 columns={columns}
                 autoHeight
                 onRowDoubleClick={(params) => {
-                    console.log(params);
+
                     edit("hardware", params.id);
                 }}
             />

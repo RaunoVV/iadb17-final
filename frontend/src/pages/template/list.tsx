@@ -1,13 +1,13 @@
-import { useNavigation } from "@refinedev/core";
+import {useNavigation} from "@refinedev/core";
 
-import { useDataGrid } from "@refinedev/mui";
-import { DataGrid, type GridColDef } from "@mui/x-data-grid";
+import {useDataGrid} from "@refinedev/mui";
+import {DataGrid, type GridColDef} from "@mui/x-data-grid";
 
 import React from "react";
 
-import type { TTemplate } from "shared/types/Template";
-import { GridActions } from "../../components/GridActions";
-import { ListToolbar } from "../../components/ListToolbar";
+import type {TTemplate} from "shared/types/Template";
+import {GridActions} from "../../components/GridActions";
+import {ListToolbar} from "../../components/ListToolbar";
 
 export const ListTemplate = () => {
     const { dataGridProps } = useDataGrid<TTemplate>({
@@ -28,8 +28,8 @@ export const ListTemplate = () => {
                 headerName: "Task count (shall we keep it?)",
                 type: "number",
                 minWidth: 200,
-                valueGetter: (params) => {
-                    return params.row.spec.data?.tasks.length ?? 0;
+                valueGetter: (_value, row) => {
+                    return row.spec.data?.tasks.length ?? 0;
                 },
             },
             {
@@ -59,7 +59,7 @@ export const ListTemplate = () => {
                 columns={columns}
                 autoHeight
                 onRowDoubleClick={(params) => {
-                    console.log(params);
+
                     edit("template", params.id);
                 }}
             />

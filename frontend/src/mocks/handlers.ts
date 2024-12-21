@@ -1,8 +1,8 @@
-import { http, HttpResponse, type JsonBodyType } from "msw";
-import type { TWorkflow } from "shared/types/Workflow";
-import { hardware, templates, workflows } from "./data/data";
-import type { THardware } from "shared/types/Hardware";
-import type { TTemplate } from "shared/types/Template";
+import {http, HttpResponse, type JsonBodyType} from "msw";
+import type {TWorkflow} from "shared/types/Workflow";
+import {hardware, templates, workflows} from "./data/data";
+import type {THardware} from "shared/types/Hardware";
+import type {TTemplate} from "shared/types/Template";
 
 const hardwareMockData = new Map<string, THardware>(hardware.map((item) => [item.name, item]));
 
@@ -39,7 +39,7 @@ export const handlers = [
             // ...and respond to them using this JSON response.
             const { id } = params;
             const postedData: THardware = await request.json();
-            console.log("posted hw data", postedData);
+
             const hardwareObj = hardwareMockData.get(id.toString());
             if (!hardwareObj) {
                 return HttpResponse.json({ error: "Hardware not found." }, { status: 400 });
@@ -90,7 +90,7 @@ export const handlers = [
         async ({ params, request }) => {
             const { id } = params;
             const updatedWf = await request.json();
-            console.log(updatedWf);
+
             const wf = workflowMockData.get(id.toString());
             if (wf) {
                 wf.spec.templateRef = updatedWf.spec.templateRef ?? wf.spec.templateRef;
@@ -138,7 +138,7 @@ export const handlers = [
         async ({params, request}) => {
             const {id} = params;
             const postedData = await request.json();
-            console.log(postedData);
+
             // const tpl = templateMockData.get(id.toString());
             const tpl = templateMockData.get(id.toString());
             if (!tpl) {

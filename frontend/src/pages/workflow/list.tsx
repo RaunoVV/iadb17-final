@@ -1,13 +1,13 @@
-import { useNavigation } from "@refinedev/core";
+import {useNavigation} from "@refinedev/core";
 
-import { useDataGrid } from "@refinedev/mui";
-import { DataGrid, type GridColDef } from "@mui/x-data-grid";
+import {useDataGrid} from "@refinedev/mui";
+import {DataGrid, type GridColDef} from "@mui/x-data-grid";
 
 import React from "react";
 
-import { GridActions } from "../../components/GridActions";
-import type { TWorkflow } from "shared/types/Workflow";
-import { ListToolbar } from "../../components/ListToolbar";
+import {GridActions} from "../../components/GridActions";
+import type {TWorkflow} from "shared/types/Workflow";
+import {ListToolbar} from "../../components/ListToolbar";
 
 export const ListWorkflow = () => {
     const { dataGridProps } = useDataGrid<TWorkflow>({
@@ -28,8 +28,8 @@ export const ListWorkflow = () => {
                 headerName: "Hardware Ref",
                 type: "string",
                 minWidth: 200,
-                valueGetter: (params) => {
-                    return params.row.spec?.hardwareRef;
+                valueGetter: (_value, row) => {
+                    return row.spec?.hardwareRef;
                 },
             },
             {
@@ -37,8 +37,8 @@ export const ListWorkflow = () => {
                 headerName: "Template Ref",
                 type: "string",
                 minWidth: 200,
-                valueGetter: (params) => {
-                    return params.row.spec?.templateRef;
+                valueGetter: (_value, row) => {
+                    return row.spec?.templateRef;
                 },
             },
             {
@@ -68,7 +68,7 @@ export const ListWorkflow = () => {
                 columns={columns}
                 autoHeight
                 onRowDoubleClick={(params) => {
-                    console.log(params);
+
                     edit("workflow", params.id);
                 }}
             />

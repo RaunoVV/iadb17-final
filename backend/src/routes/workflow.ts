@@ -1,16 +1,15 @@
-import { Router } from "express";
+import {Router} from "express";
 import {
-    HttpError,
-    KubernetesListObject,
+    type KubernetesListObject,
     type KubernetesObject,
     PatchUtils,
     type V1ObjectMeta,
 } from "@kubernetes/client-node";
 
-import { customObjectsApi } from "../resources/k8s";
-import { responseMessage } from "../index.ts";
+import {customObjectsApi} from "../resources/k8s";
 
-import type { TWorkflow, TWorkflowSpec } from "shared/src/types/Workflow.ts";
+import type {TWorkflow, TWorkflowSpec} from "shared/src/types/Workflow";
+import {responseMessage} from "../utils";
 
 export const workflowRouter = Router();
 
@@ -34,68 +33,66 @@ const WorkflowFromK8sObject = (k8sObject: k8sWorkflowObject): TWorkflow => {
     };
 };
 workflowRouter.get("/workflow", async (req, res) => {
-    try {
-        // Define custom resource parameters
+    await customObjectsApi
+        .listNamespacedCustomObject(group, version, namespace, plural)
+        .then((result) => {
+            const workflowList = new Array<TWorkflow>();
 
-        // List custom resources
-        const k8sWorkflowList = await customObjectsApi.listNamespacedCustomObject(group, version, namespace, plural);
-
-        const workflowList = new Array<TWorkflow>();
-
-        for (const item of (k8sWorkflowList.body as KubernetesListObject<k8sWorkflowObject>).items) {
-            workflowList.push(WorkflowFromK8sObject(item));
-        }
-        res.header("Content-Range", workflowList.length.toString());
-        res.header("Content-Type", "application/json");
-        res.json(workflowList);
-    } catch (error) {
-        console.error("Error:", error);
-        if (error instanceof HttpError) {
-            console.error("Error:", error);
-            res.status(error.statusCode ?? 500).send(responseMessage(error.body.statusCode, error.body.message));
-        }
-    }
+            for (const item of (
+                result.body as KubernetesListObject<k8sWorkflowObject>
+            ).items) {
+                workflowList.push(WorkflowFromK8sObject(item));
+            }
+            res.header("Content-Range", workflowList.length.toString());
+            res.header("Content-Type", "application/json");
+            res.json(workflowList);
+        })
+        .catch((reason) => {
+            const errorMessage = ["Error:", req.path, req.method, reason];
+            console.error(...errorMessage);
+            res
+                .status(reason.statusCode)
+                .send(responseMessage(reason.statusCode, errorMessage.join(",")));
+        });
 });
 workflowRouter.get("/workflow/:workflowName", async (req, res) => {
-    try {
-        // List custom resources
-        const k8sWorkflow = await customObjectsApi.getNamespacedCustomObject(
+    await customObjectsApi
+        .getNamespacedCustomObject(
             group,
             version,
             namespace,
             plural,
             req.params.workflowName,
-        );
+        )
+        .then((result) => {
+            const wf = WorkflowFromK8sObject(result.body as k8sWorkflowObject);
 
-        const wf = WorkflowFromK8sObject(k8sWorkflow.body as k8sWorkflowObject);
-
-        res.header("Content-Type", "application/json");
-        res.json(wf);
-    } catch (error) {
-        console.error("Error:", error);
-        if (error instanceof HttpError) {
-            console.error("Error:", error);
-            res.status(error.statusCode ?? 500).send(responseMessage(error.body.statusCode, error.body.message));
-        }
-    }
+            res.header("Content-Type", "application/json");
+            res.json(wf);
+        })
+        .catch((reason) => {
+            const errorMessage = ["Error:", req.path, req.method, reason];
+            console.error(...errorMessage);
+            res
+                .status(reason.statusCode)
+                .send(responseMessage(reason.statusCode, errorMessage.join(",")));
+        });
 });
 workflowRouter.put("/workflow/:workflowName", async (req, res) => {
-    try {
-        // Define custom resource parameters
-
-        const patch = [
-            {
-                op: "replace",
-                path: "/spec",
-                value: req.body.spec,
-            },
-        ];
-        const options = {
-            headers: {
-                "Content-type": PatchUtils.PATCH_FORMAT_JSON_PATCH,
-            },
-        };
-        const { body: responseWf } = (await customObjectsApi.patchNamespacedCustomObject(
+    const patch = [
+        {
+            op: "replace",
+            path: "/spec",
+            value: req.body.spec,
+        },
+    ];
+    const options = {
+        headers: {
+            "Content-type": PatchUtils.PATCH_FORMAT_JSON_PATCH,
+        },
+    };
+    await customObjectsApi
+        .patchNamespacedCustomObject(
             group,
             version,
             namespace,
@@ -106,77 +103,73 @@ workflowRouter.put("/workflow/:workflowName", async (req, res) => {
             undefined,
             undefined,
             options,
-        )) as { body: k8sWorkflowObject };
-        const wf = WorkflowFromK8sObject(responseWf);
-        res.status(200).send(wf);
-    } catch (error) {
-        console.error("Error:", error);
-        if (error instanceof HttpError) {
-            console.error("Error:", error);
-            res.status(error.statusCode ?? 500).send(responseMessage(error.body.statusCode, error.body.message));
-        }
-    }
+        )
+        .then((result) => {
+            const wf = WorkflowFromK8sObject(result.body as k8sWorkflowObject);
+            res.status(200).send(wf);
+        })
+        .catch((reason) => {
+            const errorMessage = ["Error:", req.path, req.method, reason];
+            console.error(...errorMessage);
+            res
+                .status(reason.statusCode)
+                .send(responseMessage(reason.statusCode, errorMessage.join(",")));
+        });
 });
 workflowRouter.post("/workflow", async (req, res) => {
-    try {
-        // Define custom resource parameters
+    const wfObject = {
+        apiVersion: `${group}/${version}`,
+        kind: "Workflow",
+        metadata: {
+            name: req.body.name,
+            namespace: "default",
+        },
+        spec: req.body.spec,
+    };
 
-        const wfObject = {
-            apiVersion: `${group}/${version}`,
-            kind: "Workflow",
-            metadata: {
-                name: req.body.name,
-                namespace: "default",
-            },
-            spec: req.body.spec,
-        };
-
-        const options = {
-            headers: {
-                "Content-type": "application/json",
-            },
-        };
-        await customObjectsApi
-            .createNamespacedCustomObject(
-                group,
-                version,
-                namespace,
-                plural,
-                wfObject,
-                undefined,
-                undefined,
-                undefined,
-                options,
-            )
-            .then((result) => {
-                const wf = WorkflowFromK8sObject(result.body as k8sWorkflowObject);
-                console.log(wf);
-
-                res.status(200).send(wf);
-            })
-            .catch((reason) => {
-                console.error("Error:", reason);
-                res.status(reason.statusCode).send(responseMessage(reason.statusCode, reason.body.message));
-            });
-    } catch (error) {
-        console.error("Error:", error);
-        if (error instanceof HttpError) {
-            console.error("Error:", error);
-            res.status(error.statusCode ?? 500).send(responseMessage(error.body.statusCode, error.body.message));
-        }
-    }
+    const options = {
+        headers: {
+            "Content-type": "application/json",
+        },
+    };
+    await customObjectsApi
+        .createNamespacedCustomObject(
+            group,
+            version,
+            namespace,
+            plural,
+            wfObject,
+            undefined,
+            undefined,
+            undefined,
+            options,
+        )
+        .then((result) => {
+            const wf = WorkflowFromK8sObject(result.body as k8sWorkflowObject);
+            res.status(200).send(wf);
+        })
+        .catch((reason) => {
+            const errorMessage = ["Error:", req.path, req.method, reason];
+            console.error(...errorMessage);
+            res
+                .status(reason.statusCode)
+                .send(responseMessage(reason.statusCode, errorMessage.join(",")));
+        });
 });
 workflowRouter.delete("/workflow/:workflowName", async (req, res) => {
-    try {
-        // Define custom resource parameters
-
-        await customObjectsApi.deleteNamespacedCustomObject(group, version, namespace, plural, req.params.workflowName);
-        res.status(200).send({ id: req.params.workflowName, previousData: {} });
-    } catch (error) {
-        console.error("Error:", error);
-        if (error instanceof HttpError) {
-            console.error("Error:", error);
-            res.status(error.statusCode ?? 500).send(responseMessage(error.body.statusCode, error.body.message));
-        }
-    }
+    await customObjectsApi.deleteNamespacedCustomObject(
+        group,
+        version,
+        namespace,
+        plural,
+        req.params.workflowName,
+    ).then((result) => {
+        res.status(200).send(WorkflowFromK8sObject(result.body as k8sWorkflowObject));
+    }).catch((reason) => {
+        const errorMessage = ["Error:", req.path, req.method, reason];
+        console.error(...errorMessage);
+        res
+            .status(reason.statusCode)
+            .send(responseMessage(reason.statusCode, errorMessage.join(",")));
+    });
 });
